@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GTA Mini-Map Navigator</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="GTA V style navigation with real-time GPS tracking">
+    <meta name="theme-color" content="#00ff88">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GTA Nav">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: #0a0a0a;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
+.gta-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Mini-Map */
+.minimap-wrapper {
+    position: relative;
+    width: 85vw;
+    height: 85vw;
+    max-width: 500px;
+    max-height: 500px;
+}
+
+.minimap-border {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(138, 201, 38, 0.3), rgba(25, 135, 84, 0.3));
+    padding: 8px;
+    box-shadow: 
+        0 0 30px rgba(138, 201, 38, 0.5),
+        0 0 60px rgba(138, 201, 38, 0.2),
+        inset 0 0 20px rgba(0, 0, 0, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 
+            0 0 30px rgba(138, 201, 38, 0.5),
+            0 0 60px rgba(138, 201, 38, 0.2);
+    }
+    50% {
+        box-shadow: 
+            0 0 50px rgba(138, 201, 38, 0.7),
+            0 0 100px rgba(138, 201, 38, 0.3);
+    }
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    clip-path: circle(50%);
+}
+
+.map-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-marker {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #00ff88, #00cc66);
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 
+        0 0 15px rgba(0, 255, 136, 0.8),
+        0 0 30px rgba(0, 255, 136, 0.5);
+    animation: playerPulse 1.5s ease-in-out infinite;
+    z-index: 1000;
+    display: none; /* Hide green dot - only show arrow */
+}
+
+@keyframes playerPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+    }
+    50% {
+        transform: scale(1.15);
+        box-shadow: 0 0 30px rgba(0, 255, 136, 1);
+    }
+}
+
+/* HUD */
+.compass {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(138, 201, 38, 0.6);
+    border-radius: 10px;
+    padding: 10px 20px;
+    z-index: 100;
+    box-shadow: 0 0 20px rgba(138, 201, 38, 0.3);
+}
+
+.compass-direction {
+    font-size: 24px;
+    font-weight: bold;
+    color: #00ff88;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+    text-align: center;
+}
+
+.compass-degrees {
+    font-size: 14px;
+    color: #fff;
+    margin-top: 5px;
+    text-align: center;
+}
+
+.speed-display {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(138, 201, 38, 0.6);
+    border-radius: 10px;
+    padding: 15px 25px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(138, 201, 38, 0.3);
+}
+
+.speed-value {
+    font-size: 36px;
+    font-weight: bold;
+    color: #00ff88;
+    text-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+    font-family: 'Courier New', monospace;
+}
+
+.speed-unit {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 5px;
+}
+
+.location-display {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(138, 201, 38, 0.6);
+    border-radius: 10px;
+    padding: 15px 20px;
+    max-width: 250px;
+    box-shadow: 0 0 20px rgba(138, 201, 38, 0.3);
+}
+
+.location-text {
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Waypoint */
+.waypoint-display {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(255, 193, 7, 0.8);
+    border-radius: 10px;
+    padding: 10px 20px;
+    display: none;
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+}
+
+.waypoint-display.active {
+    display: block;
+}
+
+.waypoint-distance {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffc107;
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.8);
+    text-align: center;
+}
+
+.waypoint-icon {
+    font-size: 24px;
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* Waypoint Direction Arrow (GTA V Style) - Smaller & Cleaner */
+.waypoint-arrow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 35px solid rgba(255, 193, 7, 0.9);
+    pointer-events: none;
+    z-index: 999;
+    display: none;
+    filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.6));
+    transform-origin: 50% 70%;
+}
+
+.waypoint-arrow.active {
+    display: block;
+}
+
+/* Leaflet Routing Machine */
+.leaflet-routing-container {
+    display: none !important;
+}
+
+/* Controls */
+.controls {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 100;
+}
+
+.control-btn {
+    width: 55px;
+    height: 55px;
+    border: 2px solid rgba(138, 201, 38, 0.6);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff88;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(138, 201, 38, 0.3);
+    transition: all 0.3s ease;
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 30px rgba(138, 201, 38, 0.6);
+}
+
+.control-btn.reset {
+    border-color: rgba(255, 59, 48, 0.6);
+    display: none;
+}
+
+.control-btn.reset.active {
+    display: flex;
+}
+
+.control-btn.search-btn {
+    border-color: rgba(255, 193, 7, 0.8);
+}
+
+/* Search Panel */
+.search-panel {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, rgba(10, 10, 10, 0.98), rgba(26, 26, 46, 0.98));
+    border-top: 3px solid rgba(138, 201, 38, 0.8);
+    border-radius: 30px 30px 0 0;
+    padding: 20px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
+    transition: bottom 0.4s ease;
+    z-index: 200;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.search-panel.active {
+    bottom: 0;
+}
+
+.search-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-title {
+    color: #00ff88;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.close-search {
+    width: 40px;
+    height: 40px;
+    border: 2px solid rgba(255, 59, 48, 0.6);
+    border-radius: 50%;
+    background: rgba(255, 59, 48, 0.2);
+    color: #ff3b30;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.close-search:active {
+    transform: scale(0.95);
+}
+
+.search-input {
+    width: 100%;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(138, 201, 38, 0.6);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    margin-bottom: 15px;
+}
+
+.search-input::placeholder {
+    color: #888;
+}
+
+.search-results {
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
+
+.search-results.active {
+    display: block;
+}
+
+.result-item {
+    padding: 15px;
+    background: rgba(138, 201, 38, 0.1);
+    border: 1px solid rgba(138, 201, 38, 0.3);
+    border-radius: 10px;
+    color: #fff;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.result-item:hover {
+    background: rgba(138, 201, 38, 0.2);
+    border-color: rgba(138, 201, 38, 0.5);
+}
+
+.result-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #00ff88;
+    margin-bottom: 5px;
+}
+
+.result-address {
+    font-size: 14px;
+    color: #aaa;
+}
+
+/* Leaflet */
+.leaflet-control-container {
+    display: none;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .compass {
+        top: 20px;
+        padding: 8px 15px;
+    }
+    
+    .speed-display,
+    .location-display {
+        bottom: 20px;
+        padding: 10px 15px;
+    }
+    
+    .speed-value {
+        font-size: 28px;
+    }
+    
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="gta-container">
+        <!-- Compass -->
+        <div class="compass">
+            <div class="compass-direction">N</div>
+            <div class="compass-degrees">0°</div>
+        </div>
+
+        <!-- Waypoint Distance -->
+        <div class="waypoint-display" id="waypointDisplay">
+            <div class="waypoint-distance">--</div>
+            <div class="waypoint-icon">📍</div>
+        </div>
+
+        <!-- Mini-Map -->
+        <div class="minimap-wrapper">
+            <div class="minimap-border">
+                <div id="map"></div>
+                <div class="map-overlay">
+                    <div class="player-marker"></div>
+                    <div class="waypoint-arrow" id="waypointArrow"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Speed -->
+        <div class="speed-display">
+            <div class="speed-value">0</div>
+            <div class="speed-unit">km/h</div>
+        </div>
+
+        <!-- Location -->
+        <div class="location-display">
+            <div class="location-text">Waiting for GPS...</div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="control-btn" id="centerBtn" title="Center">
+                <span>🎯</span>
+            </button>
+            <button class="control-btn" id="zoomIn" title="Zoom In">
+                <span>+</span>
+            </button>
+            <button class="control-btn" id="zoomOut" title="Zoom Out">
+                <span>-</span>
+            </button>
+            <button class="control-btn search-btn" id="searchBtn" title="Search">
+                <span>🔍</span>
+            </button>
+            <button class="control-btn reset" id="resetBtn" title="Reset">
+                <span>🔄</span>
+            </button>
+        </div>
+
+        <!-- Search Panel -->
+        <div class="search-panel" id="searchPanel">
+            <div class="search-header">
+                <div class="search-title">🔍 Search Location</div>
+                <button class="close-search" id="closeSearch">✕</button>
+            </div>
+            <input 
+                type="text" 
+                id="searchInput" 
+                class="search-input" 
+                placeholder="Enter city, address, or place..."
+            >
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
+
+    <script>
+// GTA Mini-Map - Simple & Clean
+let map;
+let currentPosition = null;
+let currentHeading = 0;
+let watchId = null;
+let lastPosition = null;
+let lastTime = null;
+let currentSpeed = 0;
+let waypointMarker = null;
+let waypointCoords = null;
+let searchTimeout = null;
+let routingControl = null;
+let waypointBearing = 0;
+
+// Initialize
+function initMap() {
+    map = L.map('map', {
+        center: [41.0082, 28.9784],
+        zoom: 16,
+        zoomControl: false,
+        attributionControl: false
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19
+    }).addTo(map);
+
+    map.on('click', function(e) {
+        setWaypoint(e.latlng.lat, e.latlng.lng);
+    });
+
+    startGPS();
+}
+
+// GPS
+function startGPS() {
+    if (!('geolocation' in navigator)) {
+        showMessage('GPS not supported');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            updatePosition(pos);
+            showMessage('GPS Found ✓');
+            
+            // Show arrow by default when GPS is found
+            document.getElementById('waypointArrow').classList.add('active');
+        },
+        (error) => {
+            console.error('GPS error:', error);
+            showMessage('Click map to set position');
+            
+            let handler = function(e) {
+                if (confirm('Set this as your position?')) {
+                    currentPosition = [e.latlng.lat, e.latlng.lng];
+                    map.setView(currentPosition, 16);
+                    showMessage('Position set ✓');
+                    map.off('click', handler);
+                    map.on('click', (e) => setWaypoint(e.latlng.lat, e.latlng.lng));
+                    
+                    // Show arrow after manual position set
+                    document.getElementById('waypointArrow').classList.add('active');
+                }
+            };
+            map.on('click', handler);
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+
+    watchId = navigator.geolocation.watchPosition(
+        updatePosition,
+        (err) => console.warn('GPS:', err),
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 5000
+        }
+    );
+}
+
+function updatePosition(position) {
+    const { latitude, longitude, heading, speed } = position.coords;
+    currentPosition = [latitude, longitude];
+
+    map.setView(currentPosition, map.getZoom());
+
+    if (speed !== null && speed !== undefined) {
+        currentSpeed = (speed * 3.6).toFixed(0);
+    } else if (lastPosition && lastTime) {
+        const distance = calculateDistance(lastPosition, currentPosition);
+        const timeDiff = (Date.now() - lastTime) / 1000;
+        currentSpeed = ((distance / timeDiff) * 3.6).toFixed(0);
+    }
+
+    if (heading !== null && heading !== undefined) {
+        currentHeading = heading;
+    } else if (lastPosition) {
+        currentHeading = calculateBearing(lastPosition, currentPosition);
+    }
+
+    updateSpeed();
+    updateCompass();
+    updateWaypointDistance();
+    updateWaypointDirection();
+    
+    // Update route if waypoint exists
+    if (waypointCoords && routingControl) {
+        // Update route waypoints
+        routingControl.setWaypoints([
+            L.latLng(currentPosition[0], currentPosition[1]),
+            L.latLng(waypointCoords[0], waypointCoords[1])
+        ]);
+    }
+
+    lastPosition = currentPosition;
+    lastTime = Date.now();
+}
+
+function calculateDistance(pos1, pos2) {
+    const R = 6371e3;
+    const φ1 = pos1[0] * Math.PI / 180;
+    const φ2 = pos2[0] * Math.PI / 180;
+    const Δφ = (pos2[0] - pos1[0]) * Math.PI / 180;
+    const Δλ = (pos2[1] - pos1[1]) * Math.PI / 180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c;
+}
+
+function calculateBearing(from, to) {
+    const φ1 = from[0] * Math.PI / 180;
+    const φ2 = to[0] * Math.PI / 180;
+    const Δλ = (to[1] - from[1]) * Math.PI / 180;
+
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) -
+              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+    const θ = Math.atan2(y, x);
+    return ((θ * 180 / Math.PI) + 360) % 360;
+}
+
+// Search
+async function searchLocation(query) {
+    if (query.length < 3) {
+        document.getElementById('searchResults').classList.remove('active');
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`
+        );
+        const data = await response.json();
+        displaySearchResults(data.features || []);
+    } catch (error) {
+        console.error('Search error:', error);
+        showSearchError();
+    }
+}
+
+function displaySearchResults(results) {
+    const resultsDiv = document.getElementById('searchResults');
+    resultsDiv.innerHTML = '';
+
+    if (results.length === 0) {
+        resultsDiv.innerHTML = '<div class="result-item">No results found</div>';
+        resultsDiv.classList.add('active');
+        return;
+    }
+
+    results.forEach(result => {
+        const props = result.properties;
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        
+        const name = props.name || props.street || 'Location';
+        const address = [props.city, props.state, props.country].filter(Boolean).join(', ');
+        
+        item.innerHTML = `
+            <div class="result-name">${name}</div>
+            <div class="result-address">${address || 'Address unavailable'}</div>
+        `;
+        item.addEventListener('click', () => selectSearchResult(result));
+        resultsDiv.appendChild(item);
+    });
+
+    resultsDiv.classList.add('active');
+}
+
+function selectSearchResult(result) {
+    const coords = result.geometry.coordinates;
+    const lat = coords[1];
+    const lon = coords[0];
+    
+    setWaypoint(lat, lon);
+    document.getElementById('searchPanel').classList.remove('active');
+    
+    if (currentPosition) {
+        const bounds = L.latLngBounds([currentPosition, [lat, lon]]);
+        map.fitBounds(bounds, { padding: [50, 50] });
+    } else {
+        map.setView([lat, lon], 14);
+    }
+}
+
+function showSearchError() {
+    const resultsDiv = document.getElementById('searchResults');
+    resultsDiv.innerHTML = '<div class="result-item">Search failed. Try again.</div>';
+    resultsDiv.classList.add('active');
+}
+
+// Waypoint
+function setWaypoint(lat, lng) {
+    waypointCoords = [lat, lng];
+
+    if (waypointMarker) {
+        map.removeLayer(waypointMarker);
+    }
+
+    waypointMarker = L.circleMarker([lat, lng], {
+        color: '#ffc107',
+        fillColor: '#ffc107',
+        fillOpacity: 0.6,
+        radius: 12,
+        weight: 3
+    }).addTo(map);
+
+    document.getElementById('waypointDisplay').classList.add('active');
+    document.getElementById('resetBtn').classList.add('active');
+    // Arrow already active by default
+
+    // Draw route if we have current position
+    if (currentPosition) {
+        drawRoute();
+    }
+
+    updateWaypointDistance();
+    updateWaypointDirection();
+}
+
+// Draw route using Leaflet Routing Machine
+function drawRoute() {
+    if (!currentPosition || !waypointCoords) return;
+
+    // Remove old route
+    if (routingControl) {
+        map.removeControl(routingControl);
+    }
+
+    // Create new route
+    routingControl = L.Routing.control({
+        waypoints: [
+            L.latLng(currentPosition[0], currentPosition[1]),
+            L.latLng(waypointCoords[0], waypointCoords[1])
+        ],
+        routeWhileDragging: false,
+        show: false,
+        addWaypoints: false,
+        lineOptions: {
+            styles: [{
+                color: '#ffc107',
+                opacity: 0.8,
+                weight: 6
+            }]
+        },
+        createMarker: function() { return null; }
+    }).addTo(map);
+
+    routingControl.on('routingerror', function(e) {
+        console.warn('Routing failed, using straight line');
+        drawStraightLine();
+    });
+}
+
+// Fallback: Draw straight line if routing fails
+function drawStraightLine() {
+    if (window.straightLine) {
+        map.removeLayer(window.straightLine);
+    }
+
+    window.straightLine = L.polyline(
+        [currentPosition, waypointCoords],
+        {
+            color: '#ffc107',
+            opacity: 0.6,
+            weight: 4,
+            dashArray: '10, 10'
+        }
+    ).addTo(map);
+}
+
+function updateWaypointDistance() {
+    if (!waypointCoords || !currentPosition) return;
+
+    const distance = calculateDistance(currentPosition, waypointCoords);
+    const distanceText = distance > 1000 
+        ? `${(distance/1000).toFixed(1)} km`
+        : `${Math.round(distance)} m`;
+
+    document.querySelector('.waypoint-distance').textContent = distanceText;
+}
+
+function updateWaypointDirection() {
+    const arrow = document.getElementById('waypointArrow');
+    if (!arrow) return;
+    
+    let rotation = 0;
+    
+    if (waypointCoords && currentPosition) {
+        // If waypoint exists, point to waypoint
+        rotation = calculateBearing(currentPosition, waypointCoords);
+    } else {
+        // No waypoint: point in player's heading direction
+        rotation = currentHeading;
+    }
+    
+    arrow.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+}
+
+function resetWaypoint() {
+    if (waypointMarker) {
+        map.removeLayer(waypointMarker);
+        waypointMarker = null;
+    }
+    
+    if (routingControl) {
+        map.removeControl(routingControl);
+        routingControl = null;
+    }
+    
+    if (window.straightLine) {
+        map.removeLayer(window.straightLine);
+        window.straightLine = null;
+    }
+    
+    waypointCoords = null;
+    document.getElementById('waypointDisplay').classList.remove('active');
+    document.getElementById('resetBtn').classList.remove('active');
+    // Keep arrow active, it will now point in player direction
+    
+    // Update arrow to point in player direction again
+    updateWaypointDirection();
+}
+
+// UI Updates
+function updateSpeed() {
+    document.querySelector('.speed-value').textContent = currentSpeed || 0;
+}
+
+function updateCompass() {
+    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    const index = Math.round(currentHeading / 45) % 8;
+    
+    document.querySelector('.compass-direction').textContent = directions[index];
+    document.querySelector('.compass-degrees').textContent = `${Math.round(currentHeading)}°`;
+}
+
+function showMessage(text) {
+    document.querySelector('.location-text').textContent = text;
+}
+
+// Event Listeners
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim();
+    
+    if (query.length < 3) {
+        document.getElementById('searchResults').classList.remove('active');
+        return;
+    }
+
+    searchTimeout = setTimeout(() => searchLocation(query), 1000);
+});
+
+document.getElementById('centerBtn').addEventListener('click', () => {
+    if (currentPosition) map.setView(currentPosition, 16);
+});
+
+document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
+document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
+
+document.getElementById('searchBtn').addEventListener('click', () => {
+    document.getElementById('searchPanel').classList.add('active');
+    document.getElementById('searchInput').focus();
+});
+
+document.getElementById('closeSearch').addEventListener('click', () => {
+    document.getElementById('searchPanel').classList.remove('active');
+    document.getElementById('searchResults').classList.remove('active');
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+    if (confirm('Remove waypoint?')) resetWaypoint();
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => initMap());
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('Service Worker registered'))
+            .catch(err => console.log('Service Worker registration failed'));
+    });
+}
+
+// Prevent double-tap zoom
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) e.preventDefault();
+    lastTouchEnd = now;
+}, false);
+
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+                console.log('ServiceWorker registered:', registration.scope);
+            })
+            .catch((error) => {
+                console.log('ServiceWorker registration failed:', error);
+            });
+    });
+}
+    </script>
+</body>
+</html>

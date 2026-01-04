@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#0a0a0a"/>
+  
+  <!-- Circular border (neon green) -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="#00ff88" stroke-width="8" opacity="0.6"/>
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#00ff88" stroke-width="4" opacity="0.8"/>
+  
+  <!-- Arrow (yellow) pointing up -->
+  <path d="M 256 120 L 320 220 L 280 220 L 280 320 L 232 320 L 232 220 L 192 220 Z" 
+        fill="#ffc107" 
+        stroke="#ffc107" 
+        stroke-width="2"
+        filter="drop-shadow(0 0 10px rgba(255, 193, 7, 0.8))"/>
+  
+  <!-- Mini map grid lines -->
+  <line x1="150" y1="256" x2="362" y2="256" stroke="#00ff88" stroke-width="1" opacity="0.2"/>
+  <line x1="256" y1="150" x2="256" y2="362" stroke="#00ff88" stroke-width="1" opacity="0.2"/>
+  
+  <!-- Corner markers -->
+  <circle cx="256" cy="150" r="4" fill="#00ff88" opacity="0.5"/>
+  <circle cx="362" cy="256" r="4" fill="#00ff88" opacity="0.5"/>
+  <circle cx="256" cy="362" r="4" fill="#00ff88" opacity="0.5"/>
+  <circle cx="150" cy="256" r="4" fill="#00ff88" opacity="0.5"/>
+  
+  <!-- Center dot (player position) -->
+  <circle cx="256" cy="256" r="8" fill="#00ff88" stroke="#ffffff" stroke-width="2"/>
+  
+  <!-- Glow effect -->
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
