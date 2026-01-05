@@ -131,121 +131,105 @@ body {
     }
 }
 
-/* HUD - Mobile First */
-.compass {
+/* Top Info Bar - Horizontal Layout */
+.top-info-bar {
     position: absolute;
     top: 10px;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+    width: 90%;
+    max-width: 400px;
+    justify-content: space-between;
+}
+
+.info-item {
+    flex: 1;
     background: rgba(0, 0, 0, 0.85);
     border: 1px solid rgba(138, 201, 38, 0.6);
     border-radius: 8px;
-    padding: 5px 12px;
-    z-index: 100;
+    padding: 8px;
+    text-align: center;
     box-shadow: 0 0 15px rgba(138, 201, 38, 0.3);
 }
 
-.compass-direction {
-    font-size: 18px;
+.info-label {
+    font-size: 9px;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    line-height: 1;
+}
+
+.info-value {
+    font-size: 16px;
     font-weight: bold;
     color: #00ff88;
     text-shadow: 0 0 8px rgba(0, 255, 136, 0.8);
-    text-align: center;
-    line-height: 1;
+    line-height: 1.2;
 }
 
-.compass-degrees {
-    font-size: 11px;
-    color: #fff;
-    margin-top: 2px;
-    text-align: center;
-    line-height: 1;
+.info-value.yellow {
+    color: #ffc107;
+    text-shadow: 0 0 8px rgba(255, 193, 7, 0.8);
 }
 
-.speed-display {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-    background: rgba(0, 0, 0, 0.85);
-    border: 1px solid rgba(138, 201, 38, 0.6);
-    border-radius: 8px;
-    padding: 8px 15px;
-    text-align: center;
-    box-shadow: 0 0 15px rgba(138, 201, 38, 0.3);
-    min-width: 60px;
-}
-
-.speed-value {
-    font-size: 24px;
-    font-weight: bold;
-    color: #00ff88;
-    text-shadow: 0 0 12px rgba(0, 255, 136, 0.8);
-    font-family: 'Courier New', monospace;
-    line-height: 1;
-}
-
-.speed-unit {
+.info-sub {
     font-size: 10px;
     color: #aaa;
     margin-top: 2px;
     line-height: 1;
 }
 
-.location-display {
+/* Bottom Control Bar - Horizontal Layout */
+.bottom-control-bar {
     position: absolute;
-    bottom: 15px;
-    left: 15px;
-    background: rgba(0, 0, 0, 0.85);
-    border: 1px solid rgba(138, 201, 38, 0.6);
-    border-radius: 8px;
-    padding: 8px 12px;
-    max-width: 180px;
-    box-shadow: 0 0 15px rgba(138, 201, 38, 0.3);
-}
-
-.location-text {
-    color: #fff;
-    font-size: 12px;
-    font-weight: bold;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Waypoint - Mobile Optimized */
-.waypoint-display {
-    position: absolute;
-    top: 50px;
+    bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+    width: 90%;
+    max-width: 400px;
+    justify-content: center;
+}
+
+.control-btn {
+    width: 50px;
+    height: 50px;
+    border: 1px solid rgba(138, 201, 38, 0.6);
+    border-radius: 50%;
     background: rgba(0, 0, 0, 0.85);
-    border: 1px solid rgba(255, 193, 7, 0.8);
-    border-radius: 8px;
-    padding: 6px 12px;
+    color: #00ff88;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 15px rgba(138, 201, 38, 0.3);
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.control-btn:active {
+    transform: scale(0.9);
+    box-shadow: 0 0 25px rgba(138, 201, 38, 0.6);
+}
+
+.control-btn.reset {
+    border-color: rgba(255, 59, 48, 0.6);
     display: none;
-    box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
 }
 
-.waypoint-display.active {
-    display: block;
+.control-btn.reset.active {
+    display: flex;
 }
 
-.waypoint-distance {
-    font-size: 16px;
-    font-weight: bold;
-    color: #ffc107;
-    text-shadow: 0 0 8px rgba(255, 193, 7, 0.8);
-    text-align: center;
-    line-height: 1;
-}
-
-.waypoint-icon {
-    font-size: 16px;
-    text-align: center;
-    margin-top: 2px;
-    line-height: 1;
+.control-btn.search-btn {
+    border-color: rgba(255, 193, 7, 0.8);
 }
 
 /* Waypoint Direction Arrow - Mobile Optimized */
@@ -441,16 +425,23 @@ body {
 </head>
 <body>
     <div class="gta-container">
-        <!-- Compass -->
-        <div class="compass">
-            <div class="compass-direction">N</div>
-            <div class="compass-degrees">0°</div>
-        </div>
-
-        <!-- Waypoint Distance -->
-        <div class="waypoint-display" id="waypointDisplay">
-            <div class="waypoint-distance">--</div>
-            <div class="waypoint-icon">📍</div>
+        <!-- Top Info Bar -->
+        <div class="top-info-bar">
+            <div class="info-item">
+                <div class="info-label">Direction</div>
+                <div class="info-value" id="compassValue">N</div>
+                <div class="info-sub" id="compassDegrees">0°</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Distance</div>
+                <div class="info-value yellow" id="waypointDistance">--</div>
+                <div class="info-sub">to waypoint</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Speed</div>
+                <div class="info-value" id="speedValue">0</div>
+                <div class="info-sub">km/h</div>
+            </div>
         </div>
 
         <!-- Mini-Map -->
@@ -458,25 +449,13 @@ body {
             <div class="minimap-border">
                 <div id="map"></div>
                 <div class="map-overlay">
-                    <div class="player-marker"></div>
                     <div class="waypoint-arrow" id="waypointArrow"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Speed -->
-        <div class="speed-display">
-            <div class="speed-value">0</div>
-            <div class="speed-unit">km/h</div>
-        </div>
-
-        <!-- Location -->
-        <div class="location-display">
-            <div class="location-text">Waiting for GPS...</div>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
+        <!-- Bottom Control Bar -->
+        <div class="bottom-control-bar">
             <button class="control-btn" id="centerBtn" title="Center">
                 <span>🎯</span>
             </button>
@@ -534,7 +513,7 @@ function initMap() {
         attributionControl: false
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 19
     }).addTo(map);
 
@@ -748,9 +727,8 @@ function setWaypoint(lat, lng) {
         weight: 3
     }).addTo(map);
 
-    document.getElementById('waypointDisplay').classList.add('active');
     document.getElementById('resetBtn').classList.add('active');
-    // Arrow already active by default
+    // Distance will be shown in top bar automatically
 
     // Draw route if we have current position
     if (currentPosition) {
@@ -813,14 +791,17 @@ function drawStraightLine() {
 }
 
 function updateWaypointDistance() {
-    if (!waypointCoords || !currentPosition) return;
+    if (!waypointCoords || !currentPosition) {
+        document.getElementById('waypointDistance').textContent = '--';
+        return;
+    }
 
     const distance = calculateDistance(currentPosition, waypointCoords);
     const distanceText = distance > 1000 
         ? `${(distance/1000).toFixed(1)} km`
         : `${Math.round(distance)} m`;
 
-    document.querySelector('.waypoint-distance').textContent = distanceText;
+    document.getElementById('waypointDistance').textContent = distanceText;
 }
 
 function updateWaypointDirection() {
@@ -857,8 +838,8 @@ function resetWaypoint() {
     }
     
     waypointCoords = null;
-    document.getElementById('waypointDisplay').classList.remove('active');
     document.getElementById('resetBtn').classList.remove('active');
+    document.getElementById('waypointDistance').textContent = '--';
     // Keep arrow active, it will now point in player direction
     
     // Update arrow to point in player direction again
@@ -867,19 +848,20 @@ function resetWaypoint() {
 
 // UI Updates
 function updateSpeed() {
-    document.querySelector('.speed-value').textContent = currentSpeed || 0;
+    document.getElementById('speedValue').textContent = currentSpeed || 0;
 }
 
 function updateCompass() {
     const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
     const index = Math.round(currentHeading / 45) % 8;
     
-    document.querySelector('.compass-direction').textContent = directions[index];
-    document.querySelector('.compass-degrees').textContent = `${Math.round(currentHeading)}°`;
+    document.getElementById('compassValue').textContent = directions[index];
+    document.getElementById('compassDegrees').textContent = `${Math.round(currentHeading)}°`;
 }
 
 function showMessage(text) {
-    document.querySelector('.location-text').textContent = text;
+    // Messages can be shown via top bar or console
+    console.log(text);
 }
 
 // Event Listeners
