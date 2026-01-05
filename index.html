@@ -5,19 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GTA Mini-Map Navigator</title>
     
-    <!-- PWA Meta Tags -->
+    <!-- Meta Tags -->
     <meta name="description" content="GTA V style navigation with real-time GPS tracking">
     <meta name="theme-color" content="#00ff88">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="GTA Nav">
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- Icons -->
-    <link rel="icon" type="image/png" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -40,57 +30,117 @@ body {
     overflow: hidden;
     width: 100vw;
     height: 100vh;
+    position: fixed;
     margin: 0;
     padding: 0;
-    position: fixed;
 }
 
-/* Ana Container - Full Screen Flex Layout */
 .gta-container {
     width: 100vw;
     height: 100vh;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     position: relative;
-    overflow: hidden;
 }
 
-/* Mini-Map - Full Screen Centered */
+/* Mobile-First Adjustments */
+@media (max-width: 768px) {
+    .compass {
+        top: 10px !important;
+        padding: 6px 12px !important;
+    }
+    
+    .compass-direction {
+        font-size: 18px !important;
+    }
+    
+    .compass-degrees {
+        font-size: 11px !important;
+    }
+    
+    .waypoint-display {
+        top: 55px !important;
+        padding: 6px 12px !important;
+    }
+    
+    .waypoint-distance {
+        font-size: 16px !important;
+    }
+    
+    .speed-display {
+        bottom: 80px !important;
+        right: 15px !important;
+        padding: 10px 15px !important;
+    }
+    
+    .speed-value {
+        font-size: 28px !important;
+    }
+    
+    .location-display {
+        bottom: 80px !important;
+        left: 15px !important;
+        padding: 10px 12px !important;
+        max-width: 150px !important;
+    }
+    
+    .location-text {
+        font-size: 11px !important;
+    }
+    
+    .controls {
+        bottom: 10px !important;
+        right: 50% !important;
+        transform: translateX(50%) !important;
+        flex-direction: row !important;
+        gap: 12px !important;
+    }
+    
+    .control-btn {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 20px !important;
+    }
+    
+    .minimap-wrapper {
+        width: 75vmin !important;
+        height: 75vmin !important;
+    }
+}
+
+/* Mini-Map */
 .minimap-wrapper {
     position: relative;
-    width: 90vmin;
-    height: 90vmin;
-    max-width: 600px;
-    max-height: 600px;
-    margin: auto;
-    flex-shrink: 0;
+    width: 85vw;
+    height: 85vw;
+    max-width: 500px;
+    max-height: 500px;
 }
 
 .minimap-border {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: linear-gradient(135deg, rgba(138, 201, 38, 0.4), rgba(25, 135, 84, 0.4));
-    padding: 10px;
+    background: linear-gradient(135deg, rgba(138, 201, 38, 0.3), rgba(25, 135, 84, 0.3));
+    padding: 8px;
     box-shadow: 
-        0 0 40px rgba(138, 201, 38, 0.6),
-        0 0 80px rgba(138, 201, 38, 0.3),
-        inset 0 0 30px rgba(0, 0, 0, 0.6);
+        0 0 30px rgba(138, 201, 38, 0.5),
+        0 0 60px rgba(138, 201, 38, 0.2),
+        inset 0 0 20px rgba(0, 0, 0, 0.5);
     animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
     0%, 100% {
         box-shadow: 
-            0 0 40px rgba(138, 201, 38, 0.6),
-            0 0 80px rgba(138, 201, 38, 0.3);
+            0 0 30px rgba(138, 201, 38, 0.5),
+            0 0 60px rgba(138, 201, 38, 0.2);
     }
     50% {
         box-shadow: 
-            0 0 60px rgba(138, 201, 38, 0.8),
-            0 0 120px rgba(138, 201, 38, 0.4);
+            0 0 50px rgba(138, 201, 38, 0.7),
+            0 0 100px rgba(138, 201, 38, 0.3);
     }
 }
 
@@ -139,112 +189,113 @@ body {
     }
 }
 
-/* Top Info Bar - Fixed Top */
-.top-info-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    gap: 8px;
+/* HUD */
+.compass {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(138, 201, 38, 0.6);
+    border-radius: 10px;
+    padding: 10px 20px;
     z-index: 100;
-    padding: 10px;
-    background: rgba(10, 10, 10, 0.9);
-    backdrop-filter: blur(10px);
-    justify-content: space-around;
+    box-shadow: 0 0 20px rgba(138, 201, 38, 0.3);
 }
 
-.info-item {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid rgba(138, 201, 38, 0.6);
-    border-radius: 8px;
-    padding: 10px 8px;
-    text-align: center;
-    box-shadow: 0 0 15px rgba(138, 201, 38, 0.3);
-}
-
-.info-label {
-    font-size: 10px;
-    color: #888;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-    line-height: 1;
-    letter-spacing: 0.5px;
-}
-
-.info-value {
-    font-size: 20px;
+.compass-direction {
+    font-size: 24px;
     font-weight: bold;
     color: #00ff88;
     text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
-    line-height: 1.2;
+    text-align: center;
+}
+
+.compass-degrees {
+    font-size: 14px;
+    color: #fff;
+    margin-top: 5px;
+    text-align: center;
+}
+
+.speed-display {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(138, 201, 38, 0.6);
+    border-radius: 10px;
+    padding: 15px 25px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(138, 201, 38, 0.3);
+}
+
+.speed-value {
+    font-size: 36px;
+    font-weight: bold;
+    color: #00ff88;
+    text-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
     font-family: 'Courier New', monospace;
 }
 
-.info-value.yellow {
+.speed-unit {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 5px;
+}
+
+.location-display {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(138, 201, 38, 0.6);
+    border-radius: 10px;
+    padding: 15px 20px;
+    max-width: 250px;
+    box-shadow: 0 0 20px rgba(138, 201, 38, 0.3);
+}
+
+.location-text {
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Waypoint */
+.waypoint-display {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(255, 193, 7, 0.8);
+    border-radius: 10px;
+    padding: 10px 20px;
+    display: none;
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+}
+
+.waypoint-display.active {
+    display: block;
+}
+
+.waypoint-distance {
+    font-size: 20px;
+    font-weight: bold;
     color: #ffc107;
     text-shadow: 0 0 10px rgba(255, 193, 7, 0.8);
+    text-align: center;
 }
 
-.info-sub {
-    font-size: 9px;
-    color: #666;
-    margin-top: 2px;
-    line-height: 1;
+.waypoint-icon {
+    font-size: 24px;
+    text-align: center;
+    margin-top: 5px;
 }
 
-/* Bottom Control Bar - Fixed Bottom */
-.bottom-control-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    gap: 10px;
-    z-index: 100;
-    padding: 10px;
-    background: rgba(10, 10, 10, 0.9);
-    backdrop-filter: blur(10px);
-    justify-content: center;
-}
-
-.control-btn {
-    width: 55px;
-    height: 55px;
-    border: 2px solid rgba(138, 201, 38, 0.6);
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.9);
-    color: #00ff88;
-    font-size: 22px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 15px rgba(138, 201, 38, 0.3);
-    transition: all 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.control-btn:active {
-    transform: scale(0.9);
-    box-shadow: 0 0 25px rgba(138, 201, 38, 0.6);
-}
-
-.control-btn.reset {
-    border-color: rgba(255, 59, 48, 0.6);
-    display: none;
-}
-
-.control-btn.reset.active {
-    display: flex;
-}
-
-.control-btn.search-btn {
-    border-color: rgba(255, 193, 7, 0.8);
-}
-
-/* Waypoint Direction Arrow - Larger & More Visible */
+/* Waypoint Direction Arrow (GTA V Style) - Smaller & Cleaner */
 .waypoint-arrow {
     position: absolute;
     top: 50%;
@@ -252,13 +303,13 @@ body {
     transform: translate(-50%, -50%);
     width: 0;
     height: 0;
-    border-left: 18px solid transparent;
-    border-right: 18px solid transparent;
-    border-bottom: 40px solid rgba(255, 193, 7, 0.95);
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 35px solid rgba(255, 193, 7, 0.9);
     pointer-events: none;
     z-index: 999;
     display: none;
-    filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.8));
+    filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.6));
     transform-origin: 50% 70%;
 }
 
@@ -271,38 +322,37 @@ body {
     display: none !important;
 }
 
-/* Controls - Mobile Optimized */
+/* Controls */
 .controls {
     position: absolute;
     top: 50%;
-    right: 10px;
+    right: 20px;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
     z-index: 100;
 }
 
 .control-btn {
-    width: 45px;
-    height: 45px;
-    border: 1px solid rgba(138, 201, 38, 0.6);
+    width: 55px;
+    height: 55px;
+    border: 2px solid rgba(138, 201, 38, 0.6);
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.8);
     color: #00ff88;
-    font-size: 18px;
+    font-size: 24px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 15px rgba(138, 201, 38, 0.3);
+    box-shadow: 0 0 20px rgba(138, 201, 38, 0.3);
     transition: all 0.3s ease;
-    -webkit-tap-highlight-color: transparent;
 }
 
 .control-btn:active {
-    transform: scale(0.9);
-    box-shadow: 0 0 25px rgba(138, 201, 38, 0.6);
+    transform: scale(0.95);
+    box-shadow: 0 0 30px rgba(138, 201, 38, 0.6);
 }
 
 .control-btn.reset {
@@ -318,20 +368,20 @@ body {
     border-color: rgba(255, 193, 7, 0.8);
 }
 
-/* Search Panel - Mobile Optimized */
+/* Search Panel */
 .search-panel {
     position: fixed;
     bottom: -100%;
     left: 0;
     right: 0;
     background: linear-gradient(180deg, rgba(10, 10, 10, 0.98), rgba(26, 26, 46, 0.98));
-    border-top: 2px solid rgba(138, 201, 38, 0.8);
-    border-radius: 20px 20px 0 0;
-    padding: 15px;
+    border-top: 3px solid rgba(138, 201, 38, 0.8);
+    border-radius: 30px 30px 0 0;
+    padding: 20px;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
     transition: bottom 0.4s ease;
     z-index: 200;
-    max-height: 65vh;
+    max-height: 60vh;
     overflow-y: auto;
 }
 
@@ -343,46 +393,45 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .search-title {
     color: #00ff88;
-    font-size: 18px;
+    font-size: 24px;
     font-weight: bold;
-    text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
 }
 
 .close-search {
-    width: 35px;
-    height: 35px;
-    border: 1px solid rgba(255, 59, 48, 0.6);
+    width: 40px;
+    height: 40px;
+    border: 2px solid rgba(255, 59, 48, 0.6);
     border-radius: 50%;
     background: rgba(255, 59, 48, 0.2);
     color: #ff3b30;
-    font-size: 20px;
+    font-size: 24px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    -webkit-tap-highlight-color: transparent;
 }
 
 .close-search:active {
-    transform: scale(0.9);
+    transform: scale(0.95);
 }
 
 .search-input {
     width: 100%;
-    padding: 12px 15px;
+    padding: 15px 20px;
     background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(138, 201, 38, 0.6);
-    border-radius: 10px;
+    border: 2px solid rgba(138, 201, 38, 0.6);
+    border-radius: 12px;
     color: #fff;
-    font-size: 15px;
+    font-size: 16px;
     outline: none;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
 }
 
 .search-input::placeholder {
@@ -390,7 +439,7 @@ body {
 }
 
 .search-results {
-    max-height: 250px;
+    max-height: 300px;
     overflow-y: auto;
     display: none;
 }
@@ -400,60 +449,75 @@ body {
 }
 
 .result-item {
-    padding: 12px;
+    padding: 15px;
     background: rgba(138, 201, 38, 0.1);
     border: 1px solid rgba(138, 201, 38, 0.3);
-    border-radius: 8px;
+    border-radius: 10px;
     color: #fff;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
-    -webkit-tap-highlight-color: transparent;
 }
 
-.result-item:active {
+.result-item:hover {
     background: rgba(138, 201, 38, 0.2);
     border-color: rgba(138, 201, 38, 0.5);
 }
 
 .result-name {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     color: #00ff88;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
 }
 
 .result-address {
-    font-size: 12px;
+    font-size: 14px;
     color: #aaa;
-    line-height: 1.3;
 }
 
 /* Leaflet */
 .leaflet-control-container {
     display: none;
 }
+
+/* Mobile */
+@media (max-width: 480px) {
+    .compass {
+        top: 20px;
+        padding: 8px 15px;
+    }
+    
+    .speed-display,
+    .location-display {
+        bottom: 20px;
+        padding: 10px 15px;
+    }
+    
+    .speed-value {
+        font-size: 28px;
+    }
+    
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+}
     </style>
 </head>
 <body>
     <div class="gta-container">
-        <!-- Top Info Bar -->
-        <div class="top-info-bar">
-            <div class="info-item">
-                <div class="info-label">Direction</div>
-                <div class="info-value" id="compassValue">N</div>
-                <div class="info-sub" id="compassDegrees">0°</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Distance</div>
-                <div class="info-value yellow" id="waypointDistance">--</div>
-                <div class="info-sub">to waypoint</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Speed</div>
-                <div class="info-value" id="speedValue">0</div>
-                <div class="info-sub">km/h</div>
-            </div>
+        <!-- Compass -->
+        <div class="compass">
+            <div class="compass-direction">N</div>
+            <div class="compass-degrees">0°</div>
+        </div>
+
+        <!-- Waypoint Distance -->
+        <div class="waypoint-display" id="waypointDisplay">
+            <div class="waypoint-distance">--</div>
+            <div class="waypoint-icon">📍</div>
         </div>
 
         <!-- Mini-Map -->
@@ -461,13 +525,25 @@ body {
             <div class="minimap-border">
                 <div id="map"></div>
                 <div class="map-overlay">
+                    <div class="player-marker"></div>
                     <div class="waypoint-arrow" id="waypointArrow"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Bottom Control Bar -->
-        <div class="bottom-control-bar">
+        <!-- Speed -->
+        <div class="speed-display">
+            <div class="speed-value">0</div>
+            <div class="speed-unit">km/h</div>
+        </div>
+
+        <!-- Location -->
+        <div class="location-display">
+            <div class="location-text">Waiting for GPS...</div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
             <button class="control-btn" id="centerBtn" title="Center">
                 <span>🎯</span>
             </button>
@@ -520,12 +596,11 @@ let waypointBearing = 0;
 function initMap() {
     map = L.map('map', {
         center: [41.0082, 28.9784],
-        zoom: 17, // Higher zoom for more detail
+        zoom: 16,
         zoomControl: false,
         attributionControl: false
     });
 
-    // Dark theme with labels - GTA style but readable
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19
     }).addTo(map);
@@ -740,8 +815,9 @@ function setWaypoint(lat, lng) {
         weight: 3
     }).addTo(map);
 
+    document.getElementById('waypointDisplay').classList.add('active');
     document.getElementById('resetBtn').classList.add('active');
-    // Distance will be shown in top bar automatically
+    // Arrow already active by default
 
     // Draw route if we have current position
     if (currentPosition) {
@@ -804,17 +880,14 @@ function drawStraightLine() {
 }
 
 function updateWaypointDistance() {
-    if (!waypointCoords || !currentPosition) {
-        document.getElementById('waypointDistance').textContent = '--';
-        return;
-    }
+    if (!waypointCoords || !currentPosition) return;
 
     const distance = calculateDistance(currentPosition, waypointCoords);
     const distanceText = distance > 1000 
         ? `${(distance/1000).toFixed(1)} km`
         : `${Math.round(distance)} m`;
 
-    document.getElementById('waypointDistance').textContent = distanceText;
+    document.querySelector('.waypoint-distance').textContent = distanceText;
 }
 
 function updateWaypointDirection() {
@@ -851,8 +924,8 @@ function resetWaypoint() {
     }
     
     waypointCoords = null;
+    document.getElementById('waypointDisplay').classList.remove('active');
     document.getElementById('resetBtn').classList.remove('active');
-    document.getElementById('waypointDistance').textContent = '--';
     // Keep arrow active, it will now point in player direction
     
     // Update arrow to point in player direction again
@@ -861,20 +934,19 @@ function resetWaypoint() {
 
 // UI Updates
 function updateSpeed() {
-    document.getElementById('speedValue').textContent = currentSpeed || 0;
+    document.querySelector('.speed-value').textContent = currentSpeed || 0;
 }
 
 function updateCompass() {
     const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
     const index = Math.round(currentHeading / 45) % 8;
     
-    document.getElementById('compassValue').textContent = directions[index];
-    document.getElementById('compassDegrees').textContent = `${Math.round(currentHeading)}°`;
+    document.querySelector('.compass-direction').textContent = directions[index];
+    document.querySelector('.compass-degrees').textContent = `${Math.round(currentHeading)}°`;
 }
 
 function showMessage(text) {
-    // Messages can be shown via top bar or console
-    console.log(text);
+    document.querySelector('.location-text').textContent = text;
 }
 
 // Event Listeners
@@ -914,15 +986,6 @@ document.getElementById('resetBtn').addEventListener('click', () => {
 // Initialize
 document.addEventListener('DOMContentLoaded', () => initMap());
 
-// PWA Service Worker Registration
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('Service Worker registered'))
-            .catch(err => console.log('Service Worker registration failed'));
-    });
-}
-
 // Prevent double-tap zoom
 let lastTouchEnd = 0;
 document.addEventListener('touchend', (e) => {
@@ -930,19 +993,6 @@ document.addEventListener('touchend', (e) => {
     if (now - lastTouchEnd <= 300) e.preventDefault();
     lastTouchEnd = now;
 }, false);
-
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then((registration) => {
-                console.log('ServiceWorker registered:', registration.scope);
-            })
-            .catch((error) => {
-                console.log('ServiceWorker registration failed:', error);
-            });
-    });
-}
     </script>
 </body>
 </html>
