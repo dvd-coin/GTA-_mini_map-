@@ -5,9 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GTA Mini-Map Navigator</title>
     
-    <!-- Meta Tags -->
+    <!-- PWA Meta Tags -->
     <meta name="description" content="GTA V style navigation with real-time GPS tracking">
     <meta name="theme-color" content="#00ff88">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GTA Nav">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -30,9 +40,6 @@ body {
     overflow: hidden;
     width: 100vw;
     height: 100vh;
-    position: fixed;
-    margin: 0;
-    padding: 0;
 }
 
 .gta-container {
@@ -42,71 +49,6 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-}
-
-/* Mobile-First Adjustments */
-@media (max-width: 768px) {
-    .compass {
-        top: 10px !important;
-        padding: 6px 12px !important;
-    }
-    
-    .compass-direction {
-        font-size: 18px !important;
-    }
-    
-    .compass-degrees {
-        font-size: 11px !important;
-    }
-    
-    .waypoint-display {
-        top: 55px !important;
-        padding: 6px 12px !important;
-    }
-    
-    .waypoint-distance {
-        font-size: 16px !important;
-    }
-    
-    .speed-display {
-        bottom: 80px !important;
-        right: 15px !important;
-        padding: 10px 15px !important;
-    }
-    
-    .speed-value {
-        font-size: 28px !important;
-    }
-    
-    .location-display {
-        bottom: 80px !important;
-        left: 15px !important;
-        padding: 10px 12px !important;
-        max-width: 150px !important;
-    }
-    
-    .location-text {
-        font-size: 11px !important;
-    }
-    
-    .controls {
-        bottom: 10px !important;
-        right: 50% !important;
-        transform: translateX(50%) !important;
-        flex-direction: row !important;
-        gap: 12px !important;
-    }
-    
-    .control-btn {
-        width: 50px !important;
-        height: 50px !important;
-        font-size: 20px !important;
-    }
-    
-    .minimap-wrapper {
-        width: 75vmin !important;
-        height: 75vmin !important;
-    }
 }
 
 /* Mini-Map */
@@ -490,7 +432,7 @@ body {
     
     .speed-display,
     .location-display {
-        bottom: 20px;
+        bottom: 80px;
         padding: 10px 15px;
     }
     
@@ -502,6 +444,15 @@ body {
         width: 50px;
         height: 50px;
         font-size: 20px;
+    }
+    
+    /* CONTROLS AT BOTTOM - HORIZONTAL */
+    .controls {
+        top: auto;
+        bottom: 15px;
+        right: 50%;
+        transform: translateX(50%);
+        flex-direction: row;
     }
 }
     </style>
@@ -985,6 +936,15 @@ document.getElementById('resetBtn').addEventListener('click', () => {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => initMap());
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('Service Worker registered'))
+            .catch(err => console.log('Service Worker registration failed'));
+    });
+}
 
 // Prevent double-tap zoom
 let lastTouchEnd = 0;
