@@ -40,49 +40,57 @@ body {
     overflow: hidden;
     width: 100vw;
     height: 100vh;
+    margin: 0;
+    padding: 0;
+    position: fixed;
 }
 
+/* Ana Container - Full Screen Flex Layout */
 .gta-container {
     width: 100vw;
     height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     position: relative;
+    overflow: hidden;
 }
 
-/* Mini-Map - Mobile First */
+/* Mini-Map - Full Screen Centered */
 .minimap-wrapper {
     position: relative;
-    width: 80vw;
-    height: 80vw;
-    max-width: 380px;
-    max-height: 380px;
+    width: 90vmin;
+    height: 90vmin;
+    max-width: 600px;
+    max-height: 600px;
+    margin: auto;
+    flex-shrink: 0;
 }
 
 .minimap-border {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: linear-gradient(135deg, rgba(138, 201, 38, 0.3), rgba(25, 135, 84, 0.3));
-    padding: 8px;
+    background: linear-gradient(135deg, rgba(138, 201, 38, 0.4), rgba(25, 135, 84, 0.4));
+    padding: 10px;
     box-shadow: 
-        0 0 30px rgba(138, 201, 38, 0.5),
-        0 0 60px rgba(138, 201, 38, 0.2),
-        inset 0 0 20px rgba(0, 0, 0, 0.5);
+        0 0 40px rgba(138, 201, 38, 0.6),
+        0 0 80px rgba(138, 201, 38, 0.3),
+        inset 0 0 30px rgba(0, 0, 0, 0.6);
     animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
     0%, 100% {
         box-shadow: 
-            0 0 30px rgba(138, 201, 38, 0.5),
-            0 0 60px rgba(138, 201, 38, 0.2);
+            0 0 40px rgba(138, 201, 38, 0.6),
+            0 0 80px rgba(138, 201, 38, 0.3);
     }
     50% {
         box-shadow: 
-            0 0 50px rgba(138, 201, 38, 0.7),
-            0 0 100px rgba(138, 201, 38, 0.3);
+            0 0 60px rgba(138, 201, 38, 0.8),
+            0 0 120px rgba(138, 201, 38, 0.4);
     }
 }
 
@@ -131,80 +139,84 @@ body {
     }
 }
 
-/* Top Info Bar - Horizontal Layout */
+/* Top Info Bar - Fixed Top */
 .top-info-bar {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     display: flex;
     gap: 8px;
     z-index: 100;
-    width: 90%;
-    max-width: 400px;
-    justify-content: space-between;
+    padding: 10px;
+    background: rgba(10, 10, 10, 0.9);
+    backdrop-filter: blur(10px);
+    justify-content: space-around;
 }
 
 .info-item {
     flex: 1;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     border: 1px solid rgba(138, 201, 38, 0.6);
     border-radius: 8px;
-    padding: 8px;
+    padding: 10px 8px;
     text-align: center;
     box-shadow: 0 0 15px rgba(138, 201, 38, 0.3);
 }
 
 .info-label {
-    font-size: 9px;
+    font-size: 10px;
     color: #888;
     text-transform: uppercase;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
     line-height: 1;
+    letter-spacing: 0.5px;
 }
 
 .info-value {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: bold;
     color: #00ff88;
-    text-shadow: 0 0 8px rgba(0, 255, 136, 0.8);
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
     line-height: 1.2;
+    font-family: 'Courier New', monospace;
 }
 
 .info-value.yellow {
     color: #ffc107;
-    text-shadow: 0 0 8px rgba(255, 193, 7, 0.8);
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.8);
 }
 
 .info-sub {
-    font-size: 10px;
-    color: #aaa;
+    font-size: 9px;
+    color: #666;
     margin-top: 2px;
     line-height: 1;
 }
 
-/* Bottom Control Bar - Horizontal Layout */
+/* Bottom Control Bar - Fixed Bottom */
 .bottom-control-bar {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
     gap: 10px;
     z-index: 100;
-    width: 90%;
-    max-width: 400px;
+    padding: 10px;
+    background: rgba(10, 10, 10, 0.9);
+    backdrop-filter: blur(10px);
     justify-content: center;
 }
 
 .control-btn {
-    width: 50px;
-    height: 50px;
-    border: 1px solid rgba(138, 201, 38, 0.6);
+    width: 55px;
+    height: 55px;
+    border: 2px solid rgba(138, 201, 38, 0.6);
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     color: #00ff88;
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -232,7 +244,7 @@ body {
     border-color: rgba(255, 193, 7, 0.8);
 }
 
-/* Waypoint Direction Arrow - Mobile Optimized */
+/* Waypoint Direction Arrow - Larger & More Visible */
 .waypoint-arrow {
     position: absolute;
     top: 50%;
@@ -240,13 +252,13 @@ body {
     transform: translate(-50%, -50%);
     width: 0;
     height: 0;
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
-    border-bottom: 28px solid rgba(255, 193, 7, 0.9);
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-bottom: 40px solid rgba(255, 193, 7, 0.95);
     pointer-events: none;
     z-index: 999;
     display: none;
-    filter: drop-shadow(0 0 6px rgba(255, 193, 7, 0.6));
+    filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.8));
     transform-origin: 50% 70%;
 }
 
@@ -508,12 +520,13 @@ let waypointBearing = 0;
 function initMap() {
     map = L.map('map', {
         center: [41.0082, 28.9784],
-        zoom: 16,
+        zoom: 17, // Higher zoom for more detail
         zoomControl: false,
         attributionControl: false
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    // Dark theme with labels - GTA style but readable
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19
     }).addTo(map);
 
